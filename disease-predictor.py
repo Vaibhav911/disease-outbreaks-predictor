@@ -178,7 +178,7 @@ def plot_graph(ratios, disease_count):
     for factor in range(factors_count):
         fact_contr_values = [ratio[factor] for ratio in ratios]
         factor_contributions.append(fact_contr_values)
-    fig = plt.figure(figsize=(6,6))
+    fig = plt.figure(figsize=(12,6))
     plt.plot(factor_contributions[0], label="temp")
     plt.plot(factor_contributions[1], label="rainfall")
     plt.plot(factor_contributions[2], label="pop dens")
@@ -186,4 +186,10 @@ def plot_graph(ratios, disease_count):
     plt.legend(loc=2)
     plt.show()
     fig.savefig("output.png")
+    
+def predict(city, temp, rf, popdens):
+    data = pd.read_csv("./Simulated_datasets/" + city + ".csv")
+    data = data.drop(columns=["YEAR"], axis=1)
+    data = data.values
+    return predict_next(data, [temp, rf, popdens])
 
