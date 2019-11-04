@@ -5,6 +5,7 @@ Created on Sat Oct 12 22:05:22 2019
 @author: Vaibhav
 """
 import pandas as pd
+import matplotlib.pyplot as plt
 
 def delta_ratio(vector_1, vector_2):
     """
@@ -82,29 +83,35 @@ def normalize_ratios(ratios):
             ratios[tup_index][ratio_index] /= ratios[tup_index][-1]
             
     
-def weighted_mean(vector):
+def weighted_mean(vec):
     """
     Returns the weighted mean of a vector based on
     weights provided by delta_weightage_mapping
     """
+    vector = vec.copy()#just copying this vector
+    vector.reverse()#reverse the list
     wtd_mean = vector[0];
-    for index in range(1, len(vector)-1):
-        w1, w2 = delta_weightage_mapping(wtd_mean, vector[index])
+    rng = max(vector) - min(vector)
+    for index in range(1, len(vector)):
+        w1, w2 = delta_weightage_mapping(wtd_mean, vector[index], rng, index + 1)
         wtd_mean = (w1 * wtd_mean) + (w2 * vector[index])
     return wtd_mean
 
-def delta_weightage_mapping(val_1, val_2):
+def delta_weightage_mapping(val_1, val_2, rng, data_pnt_cnt):
     """
     Calculate the necessary weights to find the mean
     of the parameters. Can be modified to accomodate 
-    the volatility in the data
+    the volatility in the data. rng parameter takes
+    the diff b/w max and min value. data_pts_cnt takes
+    the number of data points seen till yet.
     """
     if (val_1 == 0):
         return (1, 1)
     percentage_diff = (val_2 - val_1) / val_1
-    percentage_diff = abs(percentage_diff)
-    w1 = 0.7
-    w2 = 0.3 + (percentage_diff) / 10
+    percentage_diff = abs(percentage_diff) / rng
+    percentage_diff = min(1, percentage_diff)
+    w1 = (data_pnt_cnt - 1) / data_pnt_cnt
+    w2 = (1 / data_pnt_cnt) + (percentage_diff) / rng
     return (w1, w2)
 
 def predict_next_without_contr(vector):
@@ -116,8 +123,9 @@ def predict_next_without_contr(vector):
     delta_vector = delta(vector)
     #Calculate mean value of change
     wtd_mean_change = weighted_mean(delta_vector)
+    wtd_val = weighted_mean(vector)
     #add wtd_mean_change to last val of vector
-    predicted_val = vector[-1] + wtd_mean_change
+    predicted_val = wtd_val + wtd_mean_change
     return predicted_val
 
 def predict_contributions(ratios):
@@ -149,11 +157,33 @@ def predict_next(data, next_factor_values):
     for factor in factor_values:
         delta_ratios_perc_val.append(delta_ratio_perc(disease_count, factor))
     delta_ratios_perc_val = [list(row) for row in zip(*delta_ratios_perc_val)]
+#    print("delta_ratios_perc", delta_ratios_perc_val)
     factor_contributions = predict_contributions(delta_ratios_perc_val)
+#    print("factor_contri", factor_contributions)
     disease_predicted = 0
     sum_factor_contr = sum([abs(elem) for elem in factor_contributions])
     for factor_index in range(len(factor_contributions)):
-        perc_chng = (next_factor_values[factor_index] - factor_values[factor_index][-1]) * 100 / factor_values[factor_index][-1]
+        perc_chng = (next_factor_values[factor_index] - factor_values[factor_index][-1]) / factor_values[factor_index][-1]
         disease_predicted += factor_contributions[factor_index] * perc_chng / sum_factor_contr
+#    print("disease predicted", disease_predicted)
+    plot_graph(delta_ratios_perc_val, disease_count)
     return (disease_predicted + 1) * disease_count[-1]
+
+def plot_graph(ratios, disease_count):
+    """
+    plot the graph based on all the factors
+    """
+    factors_count = len(ratios[0])
+    factor_contributions = []
+    for factor in range(factors_count):
+        fact_contr_values = [ratio[factor] for ratio in ratios]
+        factor_contributions.append(fact_contr_values)
+    fig = plt.figure(figsize=(6,6))
+    plt.plot(factor_contributions[0], label="temp")
+    plt.plot(factor_contributions[1], label="rainfall")
+    plt.plot(factor_contributions[2], label="pop dens")
+    plt.plot(disease_count, label="disease")
+    plt.legend(loc=2)
+    plt.show()
+    fig.savefig("output.png")
 
