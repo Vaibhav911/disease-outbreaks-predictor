@@ -36,10 +36,10 @@ window.geometry("1520x780") # size of window width:- 500 ,height :- 375
 window.resizable(0,0) #this prevents from resizing 
 window.title("predicto") 
 window.configure(bg="#3E342C")
-
+#top part of window  
 top_frame = Frame(window)
 top_frame.pack()
-
+#frame contents
 Topic = Label(top_frame,text="Disease Outbreak Predictor",font=("Calibri (Body)",30,'bold'),fg="#008F11",bg="black",width=780)
 Topic.pack(ipady=10)
 
