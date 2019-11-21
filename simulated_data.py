@@ -72,7 +72,7 @@ for i in range(11):
     df.iloc[i,4] =(contribution[i][0]/100)*temp[i] +(contribution[i][1]/100)*rainfall[i] +(contribution[i][2]/100)*pop_density[i]
     df.iloc[i,4] = 150 + int(100*df.iloc[i,4])
 
-
+#generating csv files for simulated cities 
 name = dir_path+ "\\Simulated_datasets\\" +"city2.csv"
 df.to_csv(name,index=False)
 
