@@ -133,7 +133,7 @@ def predict_contributions(ratios):
     Predict the contribution of each factor based 
     on delta_weightage_mapping
     """
-#    normalize_ratios(ratios)
+#   No need to narmalize the ratios
     factors_count = len(ratios[0])
     factor_contributions = []
     for factor in range(factors_count):
@@ -157,15 +157,12 @@ def predict_next(data, next_factor_values):
     for factor in factor_values:
         delta_ratios_perc_val.append(delta_ratio_perc(disease_count, factor))
     delta_ratios_perc_val = [list(row) for row in zip(*delta_ratios_perc_val)]
-#    print("delta_ratios_perc", delta_ratios_perc_val)
     factor_contributions = predict_contributions(delta_ratios_perc_val)
-#    print("factor_contri", factor_contributions)
     disease_predicted = 0
     sum_factor_contr = sum([abs(elem) for elem in factor_contributions])
     for factor_index in range(len(factor_contributions)):
         perc_chng = (next_factor_values[factor_index] - factor_values[factor_index][-1]) / factor_values[factor_index][-1]
         disease_predicted += factor_contributions[factor_index] * perc_chng / sum_factor_contr
-#    print("disease predicted", disease_predicted)
     plot_graph(delta_ratios_perc_val, disease_count)
     return (disease_predicted + 1) * disease_count[-1]
 
@@ -188,6 +185,10 @@ def plot_graph(ratios, disease_count):
     fig.savefig("output.png")
     
 def predict(city, temp, rf, popdens):
+    """
+    Predict the next value based on previous data
+    and given input values.
+    """
     data = pd.read_csv("./Simulated_datasets/" + city + ".csv")
     data = data.drop(columns=["YEAR"], axis=1)
     data = data.values
